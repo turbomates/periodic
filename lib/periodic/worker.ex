@@ -39,13 +39,15 @@ defmodule Periodic.Worker do
             {:reply, :ok, {interval, state}, interval}
           {:ok, state, new_interval} ->
             {:reply, :ok, {interval, state}, new_interval}
+          {:stop, reason, state} ->
+            {:stop, reason, :ok, state}
           error -> error
         end
       end
 
       defp loop(worker, interval, immediately) do
         unless immediately, do: :timer.sleep(interval)
-        :ok = GenServer.call(worker, :work, :infinity)
+        GenServer.call(worker, :work, :infinity)
         :timer.sleep(interval)
         loop(worker, interval, false)
       end
