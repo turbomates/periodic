@@ -1,26 +1,22 @@
 defmodule PeriodicTest do
   use ExUnit.Case, async: true
 
-  def periodic_func(pid) do
-    send(pid, :from_periodic)
-    {:ok, [pid]}
+  test "load task children from env" do
+    tasks = [
+      {PeriodicTest, :periodic_fun, [], []},
+      {MyWorker, [], []}
+    ]
+
+    Application.put_env(:periodic, :tasks, tasks)
+    assert length(Periodic.task_children) == 2
   end
 
-  test "periodic function call" do
-    parent = self()
-    Periodic.start_link(fn -> send(parent, :from_periodic) end)
-    assert_receive :from_periodic
-  end
+  test "invalid task spec" do
+    tasks = [{}]
 
-  test "periodic function with args call" do
-    parent = self()
-    Periodic.start_link({fn m -> send(parent, m); {:ok, m}; end, [:from_periodic]})
-    assert_receive :from_periodic
-  end
-
-  test "periodic module function call with args" do
-    parent = self()
-    Periodic.start_link({PeriodicTest, :periodic_func, [parent]})
-    assert_receive :from_periodic
+    assert_raise RuntimeError, fn ->
+      Application.put_env(:periodic, :tasks, tasks)
+      Periodic.task_children
+    end
   end
 end

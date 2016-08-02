@@ -1,18 +1,22 @@
 defmodule Periodic do
-  use Periodic.Worker
+  use Application
 
-  def work({m, f, a}) do
-    {:ok, new_args} = apply(m, f, a)
-    {:ok, {m, f, new_args}}
+  def start(_, _) do
+    Supervisor.start_link(task_children, strategy: :one_for_one, name: Periodic.Supervisor)
   end
 
-  def work({f, a}) do
-    {:ok, new_args} = apply(f, a)
-    {:ok, {f, new_args}}
-  end
+  def task_children do
+    import Supervisor.Spec, warn: false
 
-  def work(f) when is_function(f) do
-    f.()
-    {:ok, f}
+    for task <- Application.get_env(:periodic, :tasks, []) do
+      case task do
+        {mod, method, state, opts} when is_atom(mod) and is_atom(method) and is_list(opts) ->
+          worker(Periodic.SimpleWorker, [{mod, method, state}, opts], restart: :transient)
+        {mod, state, opts} when is_atom(mod) and is_list(opts) ->
+          worker(mod, [state, opts], restart: :transient)
+        other ->
+          raise "Invalid task description #{inspect(other)}"
+      end
+    end
   end
 end
