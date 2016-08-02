@@ -17,7 +17,7 @@ defmodule PeriodicTest do
     ]
 
     Application.put_env(:periodic, :tasks, tasks)
-    assert length(Periodic.task_children) == 2
+    assert length(Periodic.supervisor_specs_from_env(:periodic, :tasks)) == 2
   end
 
   test "invalid task spec" do
@@ -25,7 +25,7 @@ defmodule PeriodicTest do
 
     assert_raise RuntimeError, fn ->
       Application.put_env(:periodic, :tasks, tasks)
-      Periodic.task_children
+      Periodic.supervisor_specs_from_env(:periodic, :tasks)
     end
   end
 
@@ -37,8 +37,7 @@ defmodule PeriodicTest do
     ]
 
     Application.put_env(:periodic, :tasks, tasks)
-
-    {:ok, pid} = Periodic.start([], [])
+    {:ok, pid} = Supervisor.start_link(Periodic.supervisor_specs_from_env(:periodic, :tasks), strategy: :one_for_one)
 
     assert is_pid(pid)
   end

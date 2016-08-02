@@ -11,7 +11,7 @@ defmodule Periodic.Mixfile do
      deps: deps()]
   end
 
-  def application, do: [mod: {Periodic, []}, applications: [:logger]]
-  def aliases, do: [test: "test --no-start"]
+  def application, do: [applications: [:logger]]
+  def aliases, do: []
   defp deps, do: []
 end

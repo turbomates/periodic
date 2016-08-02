@@ -1,14 +1,8 @@
 defmodule Periodic do
-  use Application
-
-  def start(_, _) do
-    Supervisor.start_link(task_children, strategy: :one_for_one, name: Periodic.Supervisor)
-  end
-
-  def task_children do
+  def supervisor_specs_from_env(app, key) do
     import Supervisor.Spec, warn: false
 
-    for task <- Application.get_env(:periodic, :tasks, []) do
+    for task <- Application.get_env(app, key, []) do
       case task do
         {mod, method, state, opts} when is_atom(mod) and is_atom(method) and is_list(opts) ->
           id = Keyword.get(opts, :id, {mod, method, state, opts})
