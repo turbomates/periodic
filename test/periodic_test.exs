@@ -31,7 +31,7 @@ defmodule PeriodicTest do
 
   test "children ids" do
     tasks = [
-      {PeriodicTest, :periodic_func1, [], []},
+      {PeriodicTest, :periodic_func1, [], [interval: 20000]},
       {PeriodicTest, :periodic_func1, [], [id: :my_periodic_worker]},
       {PeriodicTest, :periodic_func2, [], []}
     ]

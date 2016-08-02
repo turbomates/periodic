@@ -49,14 +49,18 @@ defmodule Periodic.Worker do
         unless immediately, do: :timer.sleep(interval)
         GenServer.call(worker, :work, :infinity)
         :timer.sleep(interval)
-        loop(worker, interval, false)
+        loop(worker, interval, true)
       end
 
       defp config_option(otp_app, opts, name, default) do
-        if otp_app do
-          Application.get_env(otp_app, __MODULE__, []) |> Keyword.get(name, default)
+        if opts[name] do
+          opts[name]
         else
-          default
+          if otp_app do
+            Application.get_env(otp_app, __MODULE__, []) |> Keyword.get(name, default)
+          else
+            default
+          end
         end
       end
 
