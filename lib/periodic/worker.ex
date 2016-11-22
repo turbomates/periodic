@@ -33,12 +33,12 @@ defmodule Periodic.Worker do
         {:ok, {interval, __MODULE__.setup(state)}}
       end
 
-      def handle_call(:work, _, {interval, state}) do
+      def handle_call(:__periodic_work__, _, {interval, state}) do
         case work(state) do
           {:ok, state} ->
-            {:reply, :ok, {interval, state}, interval}
+            {:reply, {:ok, interval}, {interval, state}}
           {:ok, state, new_interval} ->
-            {:reply, :ok, {interval, state}, new_interval}
+            {:reply, {:ok, new_interval}, {new_interval, state}}
           {:stop, reason, state} ->
             {:stop, reason, :ok, state}
           error -> error
@@ -47,9 +47,9 @@ defmodule Periodic.Worker do
 
       defp loop(worker, interval, immediately) do
         unless immediately, do: :timer.sleep(interval)
-        GenServer.call(worker, :work, :infinity)
-        :timer.sleep(interval)
-        loop(worker, interval, true)
+        {:ok, new_interval} = GenServer.call(worker, :__periodic_work__, :infinity)
+        :timer.sleep(new_interval)
+        loop(worker, new_interval, true)
       end
 
       defp config_option(otp_app, opts, name, default) do
