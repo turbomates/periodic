@@ -7,7 +7,7 @@ defmodule Periodic.Mixfile do
      elixir: "~> 1.3",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     aliases: aliases,
+     aliases: aliases(),
      deps: deps()]
   end
 
