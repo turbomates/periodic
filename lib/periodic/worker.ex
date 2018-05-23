@@ -13,6 +13,7 @@ defmodule Periodic.Worker do
 
       def start_link(), do: start_link([])
       def start_link(state), do: start_link(state, [])
+
       def start_link(state, opts) do
         interval = config_option(unquote(otp_app), opts, :interval, @default_interval)
         immediately = config_option(unquote(otp_app), opts, :immediately, @default_immediately)
@@ -37,11 +38,15 @@ defmodule Periodic.Worker do
         case work(state) do
           {:ok, state} ->
             {:reply, {:ok, interval}, {interval, state}}
+
           {:ok, state, new_interval} ->
             {:reply, {:ok, new_interval}, {new_interval, state}}
+
           {:stop, reason, state} ->
             {:stop, reason, :ok, state}
-          error -> error
+
+          error ->
+            error
         end
       end
 
@@ -64,7 +69,7 @@ defmodule Periodic.Worker do
         end
       end
 
-      defoverridable [work: 1, setup: 1]
+      defoverridable work: 1, setup: 1
     end
   end
 end
