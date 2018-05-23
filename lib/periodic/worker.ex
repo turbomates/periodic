@@ -11,6 +11,16 @@ defmodule Periodic.Worker do
       @default_interval unquote(default_interval)
       @default_immediately unquote(default_immediately)
 
+      def child_spec(initial_state) do
+        %{
+          id: __MODULE__,
+          start: {__MODULE__, :start_link, [initial_state]},
+          restart: :permanent,
+          shutdown: 5000,
+          type: :worker
+         }
+      end
+
       def start_link(), do: start_link([])
       def start_link(state), do: start_link(state, [])
 
@@ -69,7 +79,7 @@ defmodule Periodic.Worker do
         end
       end
 
-      defoverridable work: 1, setup: 1
+      defoverridable work: 1, setup: 1, child_spec: 1
     end
   end
 end
